@@ -2,6 +2,7 @@
   // ... 
   "compilerOptions" : { 
     // ... 
+    "esModuleInterop": true,
     "module": "commonjs",
     "strict" : true 
   } 
