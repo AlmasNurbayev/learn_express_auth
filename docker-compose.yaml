@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
   db:
     image: postgres:16.1-alpine
@@ -10,11 +10,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: '/var/lib/postgresql/data/pgdata'
     volumes:
-      - pgdata:/data/db
+      - ./db/data:/var/lib/postgresql/data
       #- ./create.sql:/docker-entrypoint-initdb.d/create_tables.sql
   auth:
     image: node:20
-    command: bash -c "npm install && npx prisma generate && npx prisma migrate deploy && npm run start:dev"
+    command: bash -c "npm install && npm run watch"
     depends_on:
       - 'db'
     working_dir: /app
@@ -24,9 +24,17 @@ services:
       - ${PORT_AUTH_SERVICE}:${PORT_AUTH_SERVICE}
     environment:
       NODE_ENV: ${NODE_ENV}
-      APP_URL: 'http://${HOST}:${PORT_M1_SERVICE}'
+      APP_URL: 'http://${HOST}:${PORT_AUTH_SERVICE}'
       DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
-
-volumes:
-  pgdata:
-  app:
+  front:
+    image: node:20
+    command: bash -c "npm install && npm run dev"
+    working_dir: /app
+    volumes:
+      - ./front:/app
+     # - ./shared:/app/src/shared
+    ports:
+      - ${PORT_FRONT_APP}:3000
+    environment:
+      SECRET_JWT: ${SECRET_JWT}
+      APP_URL: 'http://${HOST}:${PORT_FRONT_APP}'

@@ -1,19 +1,18 @@
 # compiled output
 /dist
 /node_modules
-/M1/dist
-/M1/node_modules
-/M2/dist
-/M2/node_modules
+/auth/dist
+/auth/node_modules
+/front/dist
+/front/node_modules
+/db/data
 
 .env
-/M1/.env
-/M2/.env
-
-/rabbitmq
+/auth/.env
+/front/.env
 
 # Logs
-logs
+/auth/logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
