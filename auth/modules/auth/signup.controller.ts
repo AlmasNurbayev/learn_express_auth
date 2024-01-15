@@ -13,7 +13,7 @@ export async function SignupController(req: Request, res: Response) {
       .returning();
     const { password, ...resultWithoutPassword } = result;
 
-    res.status(200).send({ message: resultWithoutPassword });
+    res.status(200).send({ data: resultWithoutPassword });
   } catch (error) {
     res.status(400).send({ error: error });
   }

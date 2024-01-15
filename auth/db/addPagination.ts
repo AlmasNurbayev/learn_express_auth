@@ -4,7 +4,6 @@ import {
   TableConfig,
   getTableConfig,
 } from 'drizzle-orm/pg-core';
-import { constants } from '../constants';
 import { asc, desc } from 'drizzle-orm';
 
 export function AddPagination<T extends PgSelect>(
@@ -14,19 +13,11 @@ export function AddPagination<T extends PgSelect>(
   table: PgTableWithColumns<TableConfig>,
   qb: T,
 ) {
-  console.log(typeof limit);
-
-  let limitNumber, offsetNumber;
-
-  if (!limit) {
-    limitNumber = constants.default_limit;
-  } else {
-    limitNumber = Number(limit);
+  if (limit) {
+    qb.limit(Number(limit));
   }
-  if (!offset) {
-    offsetNumber = constants.default_offset;
-  } else {
-    offsetNumber = Number(offset);
+  if (offset) {
+    qb.offset(Number(offset));
   }
   if (order) {
     if (typeof order === 'string') {
@@ -34,11 +25,9 @@ export function AddPagination<T extends PgSelect>(
     }
     if (typeof order === 'object') {
       const orderArray = [];
-      for (const key in order) {
+      for (const key in order as object) {
         const column = getTableConfig(table).columns.find((c) => c.name === key);
-        //console.log(key, order[key], column);
         if (column !== undefined) {
-          console.log(order[key], column.name);
           orderArray.push(String(order[key]) === 'asc' ? asc(column) : desc(column));
         }
       }
@@ -46,5 +35,5 @@ export function AddPagination<T extends PgSelect>(
     }
   }
 
-  return qb.limit(limitNumber).offset(offsetNumber);
+  return qb;
 }
