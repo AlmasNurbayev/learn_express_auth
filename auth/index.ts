@@ -1,7 +1,7 @@
 import express from 'express';
 import 'dotenv/config';
-import { AuthRoutes } from './routes/auth.routes';
-import { UserRoutes } from './routes/user.routes';
+import { AuthController } from './modules/auth/auth.controller';
+import { UserController } from './modules/user/user.controller';
 
 function bootstrap() {
   const app = express();
@@ -9,8 +9,8 @@ function bootstrap() {
   app.get('/', (req, res) => {
     res.send('Hello world');
   });
-  app.use('/auth', AuthRoutes());
-  app.use('/user', UserRoutes());
+  app.use('/auth', AuthController());
+  app.use('/user', UserController());
   app.listen(8010, () => {
     console.log('============================');
     console.log(new Date());

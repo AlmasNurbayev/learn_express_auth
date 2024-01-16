@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const AuthSignupSchema = z.object({
+export const AuthRegisterSchema = z.object({
   body: z.object({
     name: z
       .string({
@@ -8,10 +8,12 @@ export const AuthSignupSchema = z.object({
       })
       .trim()
       .min(3, 'Name cannot be empty'),
-    email: z.string().email('Not a valid email'),
+    email: z.string().email('Not a valid email').optional(),
     phone: z.string().optional(),
-    password: z.string({
-      required_error: 'Full name is required',
-    }),
+    password: z
+      .string({
+        required_error: 'Full name is required',
+      })
+      .min(8),
   }),
 });

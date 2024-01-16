@@ -1,8 +1,10 @@
 import {
+  boolean,
   integer,
   pgTable,
   serial,
   text,
+  timestamp,
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -14,6 +16,9 @@ export const users = pgTable(
     name: text('name').notNull(),
     email: varchar('email'),
     phone: varchar('phone'),
+    confirm_code: integer('confirm_code'),
+    confirm_date: timestamp('confirm_date'),
+    is_confirmed: boolean('is_confirmed').notNull().default(false),
     password: varchar('password').notNull(),
   },
   (users) => ({
