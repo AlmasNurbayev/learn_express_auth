@@ -1,47 +1,66 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { db } from '../../db/db';
-import { users } from '../../db/schema';
+import { users, confirms } from '../../db/schema';
 import { MailerService } from '../notification/mailer.service';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { LoginTypeEnum } from '../../shared/login_type.enum';
 import { SmscService } from '../notification/smsc.service';
+import jwt from 'jsonwebtoken';
+import { constants } from '../../constants';
 
 export class AuthService {
-  mailerService = new MailerService();
-  smscService = new SmscService();
-  async register(req: Request, res: Response) {
+  private mailerService = new MailerService();
+  private smscService = new SmscService();
+
+  public async register(req: Request, res: Response) {
     const { name, email, phone, password } = req.body;
     if (!phone && !email) {
       res.status(400).send({ error: 'not found email or phone' });
     }
-    const hash = await bcrypt.hash(password, 10);
 
-    const [user] = await db
-      .insert(users)
-      .values({
-        name,
-        email,
-        phone,
-        password: hash,
-      })
-      .returning();
-    const { password: _password, ...resultWithoutPassword } = user;
-
-    if (user.email) {
-      const transport = await this.sendNewConfirm(user.email, LoginTypeEnum.email);
-      res.status(200).send({ data: resultWithoutPassword, confirm: transport });
+    if (email) {
+      const confirm = await db.query.confirms.findFirst({
+        where: and(
+          eq(confirms.address, email),
+          eq(confirms.type, LoginTypeEnum.email),
+          isNotNull(confirms.confirmed_at),
+        ),
+      });
+      if (!confirm) res.status(400).send({ error: `not confirmed ${email}` });
     }
-    if (!user.email && user.phone) {
-      const transport = await this.sendNewConfirm(user.phone, LoginTypeEnum.phone);
-      res.status(200).send({ data: resultWithoutPassword, confirm: transport });
+    if (!email && phone) {
+      const confirm = await db.query.confirms.findFirst({
+        where: and(
+          eq(confirms.address, phone),
+          eq(confirms.type, LoginTypeEnum.phone),
+          isNotNull(confirms.confirmed_at),
+        ),
+      });
+      if (!confirm) res.status(400).send({ error: `not confirmed ${phone}` });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    try {
+      const [user] = await db
+        .insert(users)
+        .values({
+          name,
+          email,
+          phone,
+          password: hash,
+        })
+        .returning();
+      const { password: _password, ...resultWithoutPassword } = user;
+      res.status(200).send({ message: 'success', user: resultWithoutPassword });
+    } catch (error) {
+      res.status(500).send({ error: error });
     }
   }
 
-  async handleConfirm(req: Request, res: Response) {
+  async handleSendConfirm(req: Request, res: Response) {
     const { address, type } = req.query;
-    console.log(address, type);
-    const result = await this.sendNewConfirm(String(address), type);
+    const result = await this.sendNewConfirm(String(address), type as LoginTypeEnum);
     if (result.error) {
       res.status(400).send(result);
     }
@@ -51,27 +70,32 @@ export class AuthService {
   }
 
   async sendNewConfirm(address: string, type: LoginTypeEnum) {
-    let user;
-    if (type === LoginTypeEnum.email) {
-      user = await db.query.users.findFirst({ where: eq(users.email, address) });
+    let confirm = await db.query.confirms.findFirst({
+      where: and(eq(confirms.address, address), eq(confirms.type, type)),
+    });
+    const confirm_code = Math.floor(Math.random() * 89999 + 10000);
+    if (!confirm) {
+      // создаем запись
+      [confirm] = await db
+        .insert(confirms)
+        .values({
+          address,
+          type,
+          confirm_code,
+          requested_at: new Date(),
+        })
+        .returning();
+    } else {
+      if (confirm.requested_at && Date.now() < confirm.requested_at.getTime() + 60000) {
+        // в течение 60 секунд нельзя генерировать новый код
+        return { error: 'Query is temporary unavailable, try after 1 minute' };
+      }
+      // обновляем запись
+      await db
+        .update(confirms)
+        .set({ confirm_code, requested_at: new Date() })
+        .where(eq(confirms.id, confirm.id));
     }
-    if (type === LoginTypeEnum.phone) {
-      user = await db.query.users.findFirst({ where: eq(users.phone, address) });
-    }
-    if (!user) {
-      return { error: 'User not found' };
-    }
-    if (user.confirm_date && Date.now() < user.confirm_date.getTime() + 60000) {
-      // в течение 60 секунд нельзя генерировать новый код
-      return { error: 'Query is temporary unavailable, try after 1 minute' };
-    }
-
-    const code = Math.floor(Math.random() * 89999 + 10000);
-    const [updatedUser] = await db
-      .update(users)
-      .set({ confirm_code: code, confirm_date: new Date() })
-      .where(eq(users.id, user.id))
-      .returning();
 
     const transport = [];
     if (type === LoginTypeEnum.email) {
@@ -79,8 +103,8 @@ export class AuthService {
         from: 'info@cipo.kz',
         to: address,
         subject: 'Код подтверждения email',
-        text: `Код для подтверждения почты: ${updatedUser.confirm_code}`,
-        html: `Код для подтверждения почты: <b>${updatedUser.confirm_code}</b>`,
+        text: `Код для подтверждения почты: ${confirm_code}`,
+        html: `Код для подтверждения почты: <b>${confirm_code}</b>`,
       });
       if (emailResult.data) {
         transport.push({ email: 'success' });
@@ -91,7 +115,7 @@ export class AuthService {
     if (type === LoginTypeEnum.phone) {
       const smsResult = await this.smscService.sendSms(
         address,
-        `Код подтверждения: ${updatedUser.confirm_code}`,
+        `Код подтверждения: ${confirm_code}`,
       );
       if (smsResult.data) {
         transport.push({ phone: 'success' });
@@ -108,33 +132,58 @@ export class AuthService {
     if (!code || !address || !type) {
       res.status(400).send({ error: 'not found all data' });
     }
-    if (type === LoginTypeEnum.email) {
-      const result = await db
-        .update(users)
-        .set({ is_confirmed: true })
-        .where(
-          and(eq(users.email, String(address)), eq(users.confirm_code, Number(code))),
-        )
-        .returning();
-      if (result.length === 0) {
-        res.status(400).send({ error: 'not correct data' });
-      } else {
-        res.status(200).send({ data: result });
-      }
+    const result = await db
+      .update(confirms)
+      .set({ confirmed_at: new Date() })
+      .where(
+        and(
+          eq(confirms.address, String(address)),
+          eq(confirms.confirm_code, Number(code)),
+          eq(confirms.type, String(type)),
+        ),
+      )
+      .returning();
+    if (result.length === 0) {
+      res.status(400).send({ error: 'not correct data' });
+    } else {
+      res.status(200).send({ message: 'success' });
     }
-    if (type === LoginTypeEnum.phone) {
-      const result = await db
-        .update(users)
-        .set({ is_confirmed: true })
-        .where(
-          and(eq(users.phone, String(address)), eq(users.confirm_code, Number(code))),
-        )
-        .returning();
-      if (result.length === 0) {
-        res.status(400).send({ error: 'not correct data' });
-      } else {
-        res.status(200).send({ data: result });
-      }
+  }
+
+  async login(req: Request, res: Response) {
+    const { email, phone, password } = req.body;
+    if (!email && !phone) {
+      res.status(400).send({ error: 'not found credentials' });
+    }
+    let user;
+    if (email) {
+      user = await db.query.users.findFirst({ where: eq(users.email, email) });
+    }
+    if (phone) {
+      user = await db.query.users.findFirst({ where: eq(users.phone, phone) });
+    }
+    if (!user) {
+      res.status(400).send({ error: 'not correct login data' });
+    }
+
+    const isValidPassword = await bcrypt.compare(password, String(user?.password));
+
+    if (isValidPassword) {
+      const { password: _password, ...userWithoutPassword } = user;
+      const accessToken = jwt.sign(
+        { id: user?.id, email: user?.email, phone: user?.phone },
+        constants.secret_jwt,
+        { expiresIn: '1h' },
+      );
+      const refreshToken = jwt.sign(
+        { id: user?.id, email: user?.email, phone: user?.phone },
+        constants.secret_jwt,
+        { expiresIn: '30d' },
+      );
+      res.cookie('token', refreshToken, { httpOnly: true });
+      res.status(200).send({ data: userWithoutPassword, accessToken, refreshToken });
+    } else {
+      res.status(400).send({ error: 'not correct login data' });
     }
   }
 }

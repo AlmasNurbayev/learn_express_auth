@@ -12,7 +12,7 @@ export const AuthRegisterSchema = z.object({
     phone: z.string().optional(),
     password: z
       .string({
-        required_error: 'Full name is required',
+        required_error: 'password is required',
       })
       .min(8),
   }),

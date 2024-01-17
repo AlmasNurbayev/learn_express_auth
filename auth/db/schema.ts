@@ -8,6 +8,7 @@ import {
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { string } from 'zod';
 
 export const users = pgTable(
   'users',
@@ -16,9 +17,6 @@ export const users = pgTable(
     name: text('name').notNull(),
     email: varchar('email'),
     phone: varchar('phone'),
-    confirm_code: integer('confirm_code'),
-    confirm_date: timestamp('confirm_date'),
-    is_confirmed: boolean('is_confirmed').notNull().default(false),
     password: varchar('password').notNull(),
   },
   (users) => ({
@@ -34,4 +32,13 @@ export const oauth_users = pgTable('oauth_users', {
     .notNull(),
   provider: varchar('provider').notNull(),
   external_id: integer('external_id'),
+});
+
+export const confirms = pgTable('confirms', {
+  id: serial('id').primaryKey(),
+  type: varchar('type').notNull(),
+  address: varchar('address').notNull(),
+  confirm_code: integer('confirm_code'),
+  requested_at: timestamp('requested_at'),
+  confirmed_at: timestamp('confirmed_at'),
 });

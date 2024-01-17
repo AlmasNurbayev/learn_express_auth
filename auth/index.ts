@@ -2,15 +2,19 @@ import express from 'express';
 import 'dotenv/config';
 import { AuthController } from './modules/auth/auth.controller';
 import { UserController } from './modules/user/user.controller';
+import { errorHandler } from './middlewares/error.handler';
+import cookieParser from 'cookie-parser';
 
 function bootstrap() {
   const app = express();
   app.use(express.json());
+  app.use(cookieParser());
   app.get('/', (req, res) => {
     res.send('Hello world');
   });
   app.use('/auth', AuthController());
   app.use('/user', UserController());
+  app.use(errorHandler);
   app.listen(8010, () => {
     console.log('============================');
     console.log(new Date());

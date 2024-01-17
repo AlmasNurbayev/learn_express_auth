@@ -1,4 +1,5 @@
+import 'dotenv/config';
+
 export const constants = {
-  default_limit: 20,
-  default_offset: 0,
+  secret_jwt: process.env.SECRET_JWT || 'secret_la_la',
 };

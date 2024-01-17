@@ -4,6 +4,7 @@ import { AuthRegisterSchema } from './schemas/auth.register.schema';
 import { AuthService } from './auth.service';
 import { AuthConfirmSchema } from './schemas/auth.confirm.schema';
 import { AuthSendConfirmSchema } from './schemas/auth.sendConfirm.schema';
+import { AuthLoginSchema } from './schemas/auth.login.schema';
 
 export function AuthController() {
   const router = Router();
@@ -19,6 +20,16 @@ export function AuthController() {
     },
   );
 
+  router.post(
+    '/login',
+    async (req: Request, res: Response, next: NextFunction) => {
+      await validateSchema(req, res, next, AuthLoginSchema);
+    },
+    (req: Request, res: Response) => {
+      authService.login(req, res);
+    },
+  );
+
   router.get(
     '/send_confirm',
     async (req: Request, res: Response, next: NextFunction) => {
@@ -26,7 +37,7 @@ export function AuthController() {
     },
     (req: Request, res: Response) => {
       const {} = req.body;
-      authService.handleConfirm(req, res);
+      authService.handleSendConfirm(req, res);
     },
   );
 

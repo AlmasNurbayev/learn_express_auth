@@ -7,18 +7,17 @@ import { PgColumn, getTableConfig } from 'drizzle-orm/pg-core';
 
 export class UserService {
   async get(req: Request, res: Response) {
-    console.log('UserGetService');
-
-    const result = await db.query.users.findFirst({
+    const user = await db.query.users.findFirst({
       where: eq(users.id, Number(req.params.id)),
     });
-    if (!result) {
+    if (!user) {
       res.status(400).send({ error: 'not found' });
+    } else {
+      const { password: _password, ...userWithoutPassword } = user;
+      res.status(200).send({ data: userWithoutPassword });
     }
-    res.status(200).send({ data: result });
   }
   async find(req: Request, res: Response) {
-    console.log('UserFindController');
     const { limit, offset, order, ...where } = req.query;
     // filter all column except password
     const columnsOfUsers: { [key: string]: PgColumn } = {};

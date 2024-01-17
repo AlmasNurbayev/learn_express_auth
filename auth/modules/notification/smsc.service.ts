@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import { smallint } from 'drizzle-orm/mysql-core';
 
 export class SmscService {
   private config: { host: string; user: string; password: string };
@@ -18,10 +19,11 @@ export class SmscService {
         phones: phone,
         mes: text,
       });
-      console.log(this.config.host);
-      console.log(sms.data);
-      
-      return { data: sms.data };
+      if (!sms.data.error) {
+        return { data: sms.data };
+      } else {
+        return { error: sms.data.error };
+      }
     } catch (error) {
       console.error(error);
       return { error: error };
