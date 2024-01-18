@@ -3,6 +3,8 @@
 /node_modules
 /auth/dist
 /auth/node_modules
+/auth/db/migrations/*
+/auth/db/drizzle
 /front/dist
 /front/node_modules
 /db/data

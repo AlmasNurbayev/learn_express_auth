@@ -21,11 +21,23 @@ services:
     volumes:
       - ./auth/:/app
     ports:
-      - ${PORT_AUTH_SERVICE}:${PORT_AUTH_SERVICE}
+      - ${PORT_AUTH_SERVICE}:8010
+      - ${EMAIL_PORT}:${EMAIL_PORT}
     environment:
+      PORT_AUTH_SERVICE: ${PORT_AUTH_SERVICE}
       NODE_ENV: ${NODE_ENV}
       APP_URL: 'http://${HOST}:${PORT_AUTH_SERVICE}'
       DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
+
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+
+      SMSC_HOST: ${SMSC_HOST}
+      SMSC_USER: ${SMSC_USER}
+      SMSC_PASS: ${SMSC_PASS}
+
   front:
     image: node:20
     command: bash -c "npm install && npm run dev"

@@ -8,6 +8,7 @@ import { LoginTypeEnum } from '../../shared/login_type.enum';
 import { SmscService } from '../notification/smsc.service';
 import jwt from 'jsonwebtoken';
 import { constants } from '../../constants';
+import { Logger } from '../../shared/logger';
 
 export class AuthService {
   private mailerService = new MailerService();
@@ -131,6 +132,7 @@ export class AuthService {
         html: `Код для подтверждения почты: <b>${confirm_code}</b>`,
       });
       if (emailResult.data) {
+        Logger.debug(emailResult.data);
         transport.push({ email: 'success' });
       } else if (emailResult.error) {
         transport.push({ email: 'error' });
