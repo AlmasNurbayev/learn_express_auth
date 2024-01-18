@@ -12,42 +12,42 @@ export function AuthController() {
   //router.use(startTiming);
   router.post(
     '/register',
-    async (req: Request, res: Response, next: NextFunction) => {
-      await validateSchema(req, res, next, AuthRegisterSchema);
+    (req: Request, res: Response, next: NextFunction) => {
+      validateSchema(req, res, next, AuthRegisterSchema);
     },
-    (req: Request, res: Response) => {
-      authService.register(req, res);
+    (req: Request, res: Response, next: NextFunction) => {
+      authService.register(req, res).catch(next);
     },
   );
 
   router.post(
     '/login',
-    async (req: Request, res: Response, next: NextFunction) => {
-      await validateSchema(req, res, next, AuthLoginSchema);
+    (req: Request, res: Response, next: NextFunction) => {
+      validateSchema(req, res, next, AuthLoginSchema);
     },
-    (req: Request, res: Response) => {
-      authService.login(req, res);
+    (req: Request, res: Response, next: NextFunction) => {
+      authService.login(req, res).catch(next);
     },
   );
 
   router.get(
     '/send_confirm',
-    async (req: Request, res: Response, next: NextFunction) => {
-      await validateSchema(req, res, next, AuthSendConfirmSchema);
+    (req: Request, res: Response, next: NextFunction) => {
+      validateSchema(req, res, next, AuthSendConfirmSchema);
     },
-    (req: Request, res: Response) => {
+    (req: Request, res: Response, next: NextFunction) => {
       const {} = req.body;
-      authService.handleSendConfirm(req, res);
+      authService.handleSendConfirm(req, res).catch(next);
     },
   );
 
   router.get(
     '/confirm',
-    async (req: Request, res: Response, next: NextFunction) => {
-      await validateSchema(req, res, next, AuthConfirmSchema);
+    (req: Request, res: Response, next: NextFunction) => {
+      validateSchema(req, res, next, AuthConfirmSchema);
     },
-    (req: Request, res: Response) => {
-      authService.confirm(req, res);
+    (req: Request, res: Response, next: NextFunction) => {
+      authService.confirm(req, res).catch(next);
     },
   );
 

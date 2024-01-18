@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { emailData } from '../../shared/email.data';
 import 'dotenv/config';
+import { Logger } from '../../shared/logger';
 
 export class MailerService {
   private transporter: nodemailer.Transporter;
@@ -25,7 +26,7 @@ export class MailerService {
       });
       return { data: info };
     } catch (error) {
-      console.error(error);
+      Logger.warning(error);
       return { error: error };
     }
   }

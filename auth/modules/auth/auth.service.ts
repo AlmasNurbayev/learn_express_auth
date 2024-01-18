@@ -20,6 +20,13 @@ export class AuthService {
     }
 
     if (email) {
+      const is_duplicate = await db.query.confirms.findFirst({
+        where: and(eq(confirms.address, email), eq(confirms.type, LoginTypeEnum.email)),
+      });
+      if (is_duplicate) {
+        res.status(400).send({ error: `duplicate ${email}` });
+        return;
+      }
       const confirm = await db.query.confirms.findFirst({
         where: and(
           eq(confirms.address, email),
@@ -27,9 +34,19 @@ export class AuthService {
           isNotNull(confirms.confirmed_at),
         ),
       });
-      if (!confirm) res.status(400).send({ error: `not confirmed ${email}` });
+      if (!confirm) {
+        res.status(400).send({ error: `not confirmed ${email}` });
+        return;
+      }
     }
     if (!email && phone) {
+      const is_duplicate = await db.query.confirms.findFirst({
+        where: and(eq(confirms.address, phone), eq(confirms.type, LoginTypeEnum.phone)),
+      });
+      if (is_duplicate) {
+        res.status(400).send({ error: `duplicate ${phone}` });
+        return;
+      }
       const confirm = await db.query.confirms.findFirst({
         where: and(
           eq(confirms.address, phone),
@@ -37,7 +54,10 @@ export class AuthService {
           isNotNull(confirms.confirmed_at),
         ),
       });
-      if (!confirm) res.status(400).send({ error: `not confirmed ${phone}` });
+      if (!confirm) {
+        res.status(400).send({ error: `not confirmed ${phone}` });
+        return;
+      }
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -53,8 +73,10 @@ export class AuthService {
         .returning();
       const { password: _password, ...resultWithoutPassword } = user;
       res.status(200).send({ message: 'success', user: resultWithoutPassword });
+      return;
     } catch (error) {
       res.status(500).send({ error: error });
+      return;
     }
   }
 
@@ -63,9 +85,11 @@ export class AuthService {
     const result = await this.sendNewConfirm(String(address), type as LoginTypeEnum);
     if (result.error) {
       res.status(400).send(result);
+      return;
     }
     if (result.transport) {
       res.status(200).send(result);
+      return;
     }
   }
 
@@ -131,6 +155,7 @@ export class AuthService {
     const { code, address, type } = req.query;
     if (!code || !address || !type) {
       res.status(400).send({ error: 'not found all data' });
+      return;
     }
     const result = await db
       .update(confirms)

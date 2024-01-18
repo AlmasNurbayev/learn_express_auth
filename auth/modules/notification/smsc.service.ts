@@ -1,5 +1,5 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { smallint } from 'drizzle-orm/mysql-core';
+import axios from 'axios';
+import { Logger } from '../../shared/logger';
 
 export class SmscService {
   private config: { host: string; user: string; password: string };
@@ -25,7 +25,7 @@ export class SmscService {
         return { error: sms.data.error };
       }
     } catch (error) {
-      console.error(error);
+      Logger.error(error);
       return { error: error };
     }
   }

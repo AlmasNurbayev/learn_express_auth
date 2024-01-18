@@ -11,21 +11,21 @@ export function UserController() {
   //router.use(startTiming);
   router.get(
     '/',
-    async (req: Request, res: Response, next: NextFunction) => {
-      await validateSchema(req, res, next, UserFindSchema);
+    (req: Request, res: Response, next: NextFunction) => {
+      validateSchema(req, res, next, UserFindSchema);
     },
-    (req: Request, res: Response) => {
-      userService.find(req, res);
+    (req: Request, res: Response, next: NextFunction) => {
+      userService.find(req, res).catch(next);
     },
   );
   router.get(
     '/:id',
-    async (req: Request, res: Response, next: NextFunction) => {
-      await validateSchema(req, res, next, UserGetSchema);
+    (req: Request, res: Response, next: NextFunction) => {
+      validateSchema(req, res, next, UserGetSchema);
     },
     authorizeJWT,
-    (req: Request, res: Response) => {
-      userService.get(req, res);
+    (req: Request, res: Response, next: NextFunction) => {
+      userService.get(req, res).catch(next);
     },
   );
 
