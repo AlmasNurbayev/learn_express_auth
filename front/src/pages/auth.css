@@ -7,3 +7,13 @@
 .confirm_container {
   
 }
+
+.confirm_input {
+  width: 100px;
+  height: 50px;
+  font-size: large;
+}
+
+.button {
+  background-color: lightblue;
+}

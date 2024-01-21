@@ -17,18 +17,30 @@ import {
 } from '../interfaces/login.';
 import { toastDefaultConfig } from '../config/config';
 import { useState } from 'react';
+import { useCountdown } from 'usehooks-ts';
 
 export default function Auth() {
-  const [isDisableReply] = useState(true);
+  const [isDisableReply, setisDisableReply] = useState(true);
   const [showConfirm, setShowConfirm] = useState('none');
+
+  const [count, { startCountdown, resetCountdown }] = useCountdown({
+    countStart: 60,
+    intervalMs: 1000,
+  });
+
+  if (count === 0) {
+    resetCountdown();
+    setisDisableReply(false);
+  }
 
   async function confirmAndRegisterContinue(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
     event.preventDefault();
-
-    //setCode(event.target.value);
     if (event.target.value.length === 5) {
+      if (isDisableReply) {
+        return;
+      }
       const resultConfirm = await apiAuthSendConfirm(
         localStorage.getItem('address') || '',
         loginTypeEnum[
@@ -36,6 +48,7 @@ export default function Auth() {
         ],
         event.target.value
       );
+      event.target.value = '';
       if (resultConfirm?.status !== 200) {
         if (resultConfirm?.data.error === 'not correct data') {
           toast.error(
@@ -69,6 +82,7 @@ export default function Auth() {
   }
 
   async function requestConfirmRegister(address: string, type: loginTypeEnum) {
+    setisDisableReply(false);
     return await apiAuthRequestConfirm(address, type);
   }
 
@@ -107,7 +121,7 @@ export default function Auth() {
       }
       if (result?.data?.error?.includes('not confirmed')) {
         toast.warning(
-          'Email или телефон необходимо подвердить',
+          'На указанный email или телефон отправляется код подтверждения',
           toastDefaultConfig
         );
 
@@ -116,6 +130,8 @@ export default function Auth() {
             data.email,
             loginTypeEnum.email
           );
+          startCountdown();
+          setisDisableReply(true);
           if (resultConfirm.data.transport?.email === 'success') {
             localStorage.setItem('address', data.email);
             localStorage.setItem('password', data.password);
@@ -148,7 +164,7 @@ export default function Auth() {
         }
       }
       if (result?.data?.issues) {
-        result?.data?.issues.map((item: {path: string[]}) => {
+        result?.data?.issues.map((item: { path: string[] }) => {
           if (item.path[1] === 'password') {
             toast.error(
               'Пароль должен быть заполнен и не менее 8 символов',
@@ -224,19 +240,31 @@ export default function Auth() {
             <input type="text" placeholder="email" name="email" />
             <input type="text" placeholder="phone" name="phone" />
             <input type="text" placeholder="password" name="password" />
-            <button type="submit">register</button>
+            <button className="button" type="submit">
+              register
+            </button>
             <div className="confirm_container" style={{ display: showConfirm }}>
               На ваш адрес {localStorage.getItem('address')} был отправлен код
-              подтверждения. Введите его в поле ниже. Если к вам не пришел код,
-              то нажмите "Отправить код повторно" через 1 минуту
+              подтверждения. Введите его в поле ниже:
+              <br />
               <input
+                className="confirm_input"
                 type="text"
                 onChange={(event) => confirmAndRegisterContinue(event)}
-                placeholder="код..."
+                placeholder='введите код'
                 maxLength={5}
                 size={5}
               />
-              <button disabled={isDisableReply}>Отправить повторно</button>
+              <br />
+              {isDisableReply && `Если к вам не пришел код, то повторите отправку кода через ${count} секунд`}
+
+              <button
+                className="button"
+                disabled={isDisableReply}
+                type="submit"
+              >
+                Отправить повторно
+              </button>
             </div>
           </form>
         </div>
