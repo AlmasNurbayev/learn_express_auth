@@ -27,6 +27,7 @@ services:
       PORT_AUTH_SERVICE: ${PORT_AUTH_SERVICE}
       NODE_ENV: ${NODE_ENV}
       APP_URL: 'http://${HOST}:${PORT_AUTH_SERVICE}'
+      FRONT_URL: 'http://localhost:${PORT_FRONT_APP}'
       DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
 
       EMAIL_HOST: ${EMAIL_HOST}
@@ -50,3 +51,4 @@ services:
     environment:
       SECRET_JWT: ${SECRET_JWT}
       APP_URL: 'http://${HOST}:${PORT_FRONT_APP}'
+      BACK_URL: 'http://localhost:${PORT_AUTH_SERVICE}'

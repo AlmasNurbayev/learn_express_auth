@@ -21,8 +21,8 @@ export class AuthService {
     }
 
     if (email) {
-      const is_duplicate = await db.query.confirms.findFirst({
-        where: and(eq(confirms.address, email), eq(confirms.type, LoginTypeEnum.email)),
+      const is_duplicate = await db.query.users.findFirst({
+        where: and(eq(users.email, email)),
       });
       if (is_duplicate) {
         res.status(400).send({ error: `duplicate ${email}` });
@@ -41,8 +41,8 @@ export class AuthService {
       }
     }
     if (!email && phone) {
-      const is_duplicate = await db.query.confirms.findFirst({
-        where: and(eq(confirms.address, phone), eq(confirms.type, LoginTypeEnum.phone)),
+      const is_duplicate = await db.query.users.findFirst({
+        where: and(eq(users.phone, phone)),
       });
       if (is_duplicate) {
         res.status(400).send({ error: `duplicate ${phone}` });
@@ -113,7 +113,7 @@ export class AuthService {
     } else {
       if (confirm.requested_at && Date.now() < confirm.requested_at.getTime() + 60000) {
         // в течение 60 секунд нельзя генерировать новый код
-        return { error: 'Query is temporary unavailable, try after 1 minute' };
+        //return { error: 'Query is temporary unavailable, try after 1 minute' };
       }
       // обновляем запись
       await db
@@ -122,7 +122,7 @@ export class AuthService {
         .where(eq(confirms.id, confirm.id));
     }
 
-    const transport = [];
+    const transport = {} as { email?: string; phone?: string };
     if (type === LoginTypeEnum.email) {
       const emailResult = await this.mailerService.sendMail({
         from: 'info@cipo.kz',
@@ -133,9 +133,9 @@ export class AuthService {
       });
       if (emailResult.data) {
         Logger.debug(emailResult.data);
-        transport.push({ email: 'success' });
+        transport.email = 'success';
       } else if (emailResult.error) {
-        transport.push({ email: 'error' });
+        transport.email = 'error';
       }
     }
     if (type === LoginTypeEnum.phone) {
@@ -144,9 +144,9 @@ export class AuthService {
         `Код подтверждения: ${confirm_code}`,
       );
       if (smsResult.data) {
-        transport.push({ phone: 'success' });
+        transport.phone = 'success';
       } else if (smsResult.error) {
-        transport.push({ phone: 'error' });
+        transport.phone = 'error';
       }
     }
 
