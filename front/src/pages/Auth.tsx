@@ -19,7 +19,7 @@ import { toastDefaultConfig } from '../config/config';
 import { useState } from 'react';
 
 export default function Auth() {
-  const [isDisableReply, setisDisableReply] = useState(true);
+  const [isDisableReply] = useState(true);
   const [showConfirm, setShowConfirm] = useState('none');
 
   async function confirmAndRegisterContinue(
@@ -62,7 +62,7 @@ export default function Auth() {
           data.phone = localStorage.getItem('address') || '';
         }
 
-        const resultRegister = await registerHandler(data);
+        registerHandler(data);
       }
       console.log('resultConfirm', resultConfirm);
     }
@@ -74,7 +74,10 @@ export default function Auth() {
 
   async function loginHandler(data: loginRequest) {
     const resultLogin = await apiAuthLogin(data);
-
+    if (resultLogin?.status === 200) {
+      localStorage.setItem('isAuth', 'true');
+      localStorage.setItem('userId', resultLogin.data.data.id);
+    }
     if (resultLogin?.status !== 200) {
       if (resultLogin?.data.error === 'not correct login data') {
         toast.error('Неправильные учетные данные', toastDefaultConfig);
@@ -145,7 +148,7 @@ export default function Auth() {
         }
       }
       if (result?.data?.issues) {
-        result?.data?.issues.map((item) => {
+        result?.data?.issues.map((item: {path: string[]}) => {
           if (item.path[1] === 'password') {
             toast.error(
               'Пароль должен быть заполнен и не менее 8 символов',

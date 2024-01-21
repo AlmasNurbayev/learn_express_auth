@@ -4,7 +4,6 @@ import App from './App.tsx'
 import './index.css'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Auth from './pages/Auth.tsx';
-import Confirm from './pages/Confirm.tsx';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -13,7 +12,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/confirm" element={<Confirm />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

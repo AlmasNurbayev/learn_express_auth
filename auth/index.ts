@@ -13,7 +13,7 @@ function bootstrap() {
   const app = express();
   app.use(express.json());
   app.use(cookieParser());
-  app.use(cors({ origin: constants.front_url }));
+  app.use(cors({ origin: constants.front_url, credentials: true }));
 
   app.get('/', (req, res) => {
     res.send('Hello world');

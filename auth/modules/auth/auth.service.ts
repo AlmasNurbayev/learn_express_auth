@@ -72,8 +72,9 @@ export class AuthService {
           password: hash,
         })
         .returning();
-      const { password: _password, ...resultWithoutPassword } = user;
-      res.status(200).send({ message: 'success', user: resultWithoutPassword });
+      const userWithoutPassword = { ...user } as Partial<typeof user>;
+      delete userWithoutPassword?.password;
+      res.status(200).send({ message: 'success', user: userWithoutPassword });
       return;
     } catch (error) {
       res.status(500).send({ error: error });
@@ -192,11 +193,9 @@ export class AuthService {
     if (!user) {
       res.status(400).send({ error: 'not correct login data' });
     }
-
     const isValidPassword = await bcrypt.compare(password, String(user?.password));
 
     if (isValidPassword) {
-      const { password: _password, ...userWithoutPassword } = user;
       const accessToken = jwt.sign(
         { id: user?.id, email: user?.email, phone: user?.phone },
         constants.secret_jwt,
@@ -207,7 +206,12 @@ export class AuthService {
         constants.secret_jwt,
         { expiresIn: '30d' },
       );
-      res.cookie('token', refreshToken, { httpOnly: true });
+      res.cookie('token_auth_sample', refreshToken, { httpOnly: true });
+      //res.appendHeader('Set-Cookie', 'token=encryptedstring; HttpOnly');
+      //res.appendHeader('Access-Control-Allow-Credentials', 'true');
+      const userWithoutPassword = { ...user } as Partial<typeof user>;
+      delete userWithoutPassword?.password;
+
       res.status(200).send({ data: userWithoutPassword, accessToken, refreshToken });
     } else {
       res.status(400).send({ error: 'not correct login data' });

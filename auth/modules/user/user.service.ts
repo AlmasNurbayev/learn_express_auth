@@ -13,7 +13,8 @@ export class UserService {
     if (!user) {
       res.status(400).send({ error: 'not found' });
     } else {
-      const { password: _password, ...userWithoutPassword } = user;
+      const userWithoutPassword = { ...user } as Partial<typeof user>;
+      delete userWithoutPassword.password;
       res.status(200).send({ data: userWithoutPassword });
     }
   }

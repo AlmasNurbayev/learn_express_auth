@@ -5,7 +5,7 @@ import { users } from '../db/schema';
 import { Logger } from '../shared/logger';
 
 export async function authorizeJWT(req: Request, res: Response, next: NextFunction) {
-  passport.authenticate('jwt', function (err: string, user: typeof users, jwtToken) {
+  passport.authenticate('jwt', function (err: string, user: typeof users) {
     //console.log(err, user, jwtToken);
     if (err) {
       Logger.warning(err);

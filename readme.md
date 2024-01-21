@@ -11,6 +11,11 @@ auth-стек:
 - внешние API для подтверждения учетных данных - SMSC.ru, Nodemailer для smtp
 - логгер - winston в консоль
 
+front:
+- react
+- react-tostify для уведомлений (https://www.npmjs.com/package/react-toastify), axios для запросов 
+- TODO - хранение некоторых данных перенести из localstorage в Zustand
+
 db:
 - стандартный контейнер Postrgres
 
