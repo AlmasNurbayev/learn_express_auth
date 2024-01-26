@@ -19,6 +19,7 @@ export function UserController() {
     (req: Request, res: Response, next: NextFunction) => {
       validateSchema(req, res, next, UserFindSchema);
     },
+    authorizeJWT,
     (req: Request, res: Response, next: NextFunction) => {
       userService.find(req, res).catch(next);
     },

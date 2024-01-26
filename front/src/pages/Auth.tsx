@@ -19,12 +19,14 @@ import { useState } from 'react';
 import { login } from '../common/AuthProvider';
 import ConfirmForm from '../components/Auth/ConfirmForm';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../store/useAuth';
 
 export default function Auth() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [address, setAddress] = useState<string>('');
   const [type, setType] = useState<loginTypeEnum>();
   const [sharedDataRegister, setSharedDataRegister ] = useState<RegisterRequest>();
+  const {setUser, setAccessToken}  = useAuth();
   const navigate = useNavigate();
 
   // для передачи значения сюда из ConfirmForm
@@ -48,7 +50,9 @@ export default function Auth() {
   async function loginHandler(data: loginRequest) {
     const resultLogin = await apiAuthLogin(data);
     if (resultLogin?.status === 200) {
-      await login(resultLogin.data.data, resultLogin.data.accessToken);
+      //await login(resultLogin.data.data, resultLogin.data.accessToken);
+      setUser(resultLogin.data.data);
+      setAccessToken(resultLogin.data.accessToken);
       toast.success(`Добро пожаловать ${resultLogin.data.data.name}`, toastDefaultConfig);
       navigate('/');
     }
@@ -185,7 +189,7 @@ export default function Auth() {
             <input type="text" placeholder="email" name="email" />
             <input type="text" placeholder="phone" name="phone" />
             <input type="text" placeholder="password" name="password" />
-            <button type="submit">login</button>
+            <button className="button" type="submit">login</button>
           </form>
         </div>
         <div>

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LoginTypeEnum } from '../../../shared/login_type.enum';
+import { LoginTypeEnum } from '../../../shared/interfaces';
 
 export const AuthConfirmSchema = z.object({
   query: z.object({

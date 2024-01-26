@@ -1,5 +1,6 @@
 import { ToastOptions } from "react-toastify";
 
+export const backUrl = process.env.BACK_URL;
 export const loginUrl = process.env.BACK_URL + '/auth/login';
 export const registerUrl = process.env.BACK_URL + '/auth/register';
 export const requestConfirmUrl = process.env.BACK_URL + '/auth/send_confirm';

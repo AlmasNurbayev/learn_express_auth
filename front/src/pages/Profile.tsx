@@ -4,11 +4,10 @@ import { Iuser } from '../interfaces/user';
 import { ToastContainer, toast } from 'react-toastify';
 import { toastDefaultConfig } from '../config/config';
 import Header from '../components/Header';
-import { logout } from '../common/AuthProvider';
+import { useAuth } from '../store/useAuth';
 
 export default function Profile() {
-  const [user, setUser] = useState<Iuser>();
-  const [error, setError] = useState();
+  const {user, setUser, clearUser} = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -18,8 +17,7 @@ export default function Profile() {
           'Не удалось загрузить профиль ' + res.data.error,
           toastDefaultConfig
         );
-        setError(res.data.error);
-        logout();
+        clearUser();
       } else {
         setUser(res.data.user);
       }

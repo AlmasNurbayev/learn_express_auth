@@ -4,11 +4,16 @@ import { db } from '../../db/db';
 import { users, confirms } from '../../db/schema';
 import { MailerService } from '../notification/mailer.service';
 import { and, eq, isNotNull } from 'drizzle-orm';
-import { LoginTypeEnum } from '../../shared/login_type.enum';
+import { LoginTypeEnum } from '../../shared/interfaces';
 import { SmscService } from '../notification/smsc.service';
 import jwt from 'jsonwebtoken';
 import { constants } from '../../constants';
 import { Logger } from '../../shared/logger';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyToken,
+} from '../../shared/jwt_helpers';
 
 export class AuthService {
   private mailerService = new MailerService();
@@ -216,5 +221,39 @@ export class AuthService {
     } else {
       res.status(400).send({ error: 'not correct login data' });
     }
+  }
+
+  async refresh(req: Request, res: Response) {
+    const { token_auth_sample } = req.cookies;
+    if (!token_auth_sample) {
+      res.status(400).send({ error: 'not found refresh token' });
+      return;
+    }
+    await verifyToken(token_auth_sample)
+      .then(async (payload) => {
+        const user = await db.query.users.findFirst({
+          where: eq(users.id, payload.id),
+        });
+        if (!user) {
+          res.status(400).send('not correct user data');
+          return;
+        }
+        const refreshToken = generateRefreshToken({
+          id: user.id,
+          email: user.email || undefined,
+          phone: user.phone || undefined,
+        });
+        const accessToken = generateAccessToken({
+          id: user.id,
+          email: user.email || undefined,
+          phone: user.phone || undefined,
+        });
+        res.status(200).send({ accessToken, refreshToken });
+      })
+      .catch((error) => {
+        Logger.error(error);
+        res.status(400).send('not correct refresh token');
+        return;
+      });
   }
 }
