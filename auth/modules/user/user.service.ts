@@ -37,4 +37,8 @@ export class UserService {
 
     res.status(200).send({ data: result });
   }
+
+  async getMe(req: Request, res: Response) {
+    res.status(200).send({ user: req.user });
+  }
 }

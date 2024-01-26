@@ -5,7 +5,6 @@ import {
   apiAuthLogin,
   apiAuthRegister,
   apiAuthRequestConfirm,
-  apiAuthSendConfirm,
 } from '../api/api.auth';
 import { deleteUndefinedEmptyKeys } from '../common/utils';
 import { toast, ToastContainer } from 'react-toastify';
@@ -17,80 +16,41 @@ import {
 } from '../interfaces/login.';
 import { toastDefaultConfig } from '../config/config';
 import { useState } from 'react';
-import { useCountdown } from 'usehooks-ts';
+import { login } from '../common/AuthProvider';
+import ConfirmForm from '../components/Auth/ConfirmForm';
+import { useNavigate } from 'react-router-dom';
 
 export default function Auth() {
-  const [isDisableReply, setisDisableReply] = useState(true);
-  const [showConfirm, setShowConfirm] = useState('none');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [address, setAddress] = useState<string>('');
+  const [type, setType] = useState<loginTypeEnum>();
+  const [sharedDataRegister, setSharedDataRegister ] = useState<RegisterRequest>();
+  const navigate = useNavigate();
 
-  const [count, { startCountdown, resetCountdown }] = useCountdown({
-    countStart: 60,
-    intervalMs: 1000,
-  });
-
-  if (count === 0) {
-    resetCountdown();
-    setisDisableReply(false);
-  }
-
-  async function confirmAndRegisterContinue(
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
-    event.preventDefault();
-    if (event.target.value.length === 5) {
-      if (isDisableReply) {
-        return;
+  // для передачи значения сюда из ConfirmForm
+  const changeConfirm = async (value: boolean) => {
+    setShowConfirm(value);
+    if (!value) {
+        console.log('changeConfirm 1');
+      // если из формы конфирма вернулось ее скрытие, то пробуем заново зарегистрироваться
+      if (sharedDataRegister) {
+        await registerHandler(sharedDataRegister);
+        await loginHandler(sharedDataRegister);
       }
-      const resultConfirm = await apiAuthSendConfirm(
-        localStorage.getItem('address') || '',
-        loginTypeEnum[
-          localStorage.getItem('type') as keyof typeof loginTypeEnum
-        ],
-        event.target.value
-      );
-      event.target.value = '';
-      if (resultConfirm?.status !== 200) {
-        if (resultConfirm?.data.error === 'not correct data') {
-          toast.error(
-            'Неправильный код или адрес, повторите отправку кода через минуту',
-            toastDefaultConfig
-          );
-          return;
-        } else {
-          toast.error(
-            'Ошибка при отправке кода, повторите попытку через минуту',
-            toastDefaultConfig
-          );
-          return;
-        }
-      } else {
-        const data: RegisterRequest = {
-          password: localStorage.getItem('password') || '',
-          name: localStorage.getItem('name') || '',
-        };
-        const type = localStorage.getItem('type') as keyof typeof loginTypeEnum;
-        if (type === loginTypeEnum.email) {
-          data.email = localStorage.getItem('address') || '';
-        } else if (type === loginTypeEnum.phone) {
-          data.phone = localStorage.getItem('address') || '';
-        }
-
-        registerHandler(data);
-      }
-      console.log('resultConfirm', resultConfirm);
     }
-  }
+  };
 
   async function requestConfirmRegister(address: string, type: loginTypeEnum) {
-    setisDisableReply(false);
+    //setisDisableReply(false);
     return await apiAuthRequestConfirm(address, type);
   }
 
   async function loginHandler(data: loginRequest) {
     const resultLogin = await apiAuthLogin(data);
     if (resultLogin?.status === 200) {
-      localStorage.setItem('isAuth', 'true');
-      localStorage.setItem('userId', resultLogin.data.data.id);
+      await login(resultLogin.data.data, resultLogin.data.accessToken);
+      toast.success(`Добро пожаловать ${resultLogin.data.data.name}`, toastDefaultConfig);
+      navigate('/');
     }
     if (resultLogin?.status !== 200) {
       if (resultLogin?.data.error === 'not correct login data') {
@@ -108,10 +68,11 @@ export default function Auth() {
     const result = await apiAuthRegister(data);
     if (result?.status === 200) {
       toast.success(
-        'Регистрация прошла успешно, можете произвести вход',
+        'Регистрация прошла успешно, производится вход',
         toastDefaultConfig
       );
-      setShowConfirm('none');
+      setShowConfirm(false);
+      await loginHandler(data);
       return;
     }
     if (result?.status !== 200) {
@@ -124,20 +85,18 @@ export default function Auth() {
           'На указанный email или телефон отправляется код подтверждения',
           toastDefaultConfig
         );
-
+        setSharedDataRegister(data);
         if (data.email) {
           const resultConfirm = await requestConfirmRegister(
             data.email,
             loginTypeEnum.email
           );
-          startCountdown();
-          setisDisableReply(true);
+          //startCountdown();
+          //setisDisableReply(true);
           if (resultConfirm.data.transport?.email === 'success') {
-            localStorage.setItem('address', data.email);
-            localStorage.setItem('password', data.password);
-            localStorage.setItem('name', data.name);
-            localStorage.setItem('type', loginTypeEnum.email);
-            setShowConfirm('block');
+            setAddress(data.email);
+            setType(loginTypeEnum.email);
+            setShowConfirm(true);
           } else {
             toast.error(
               'Не удалось отправить подтверждение на email ' + data.email,
@@ -150,11 +109,9 @@ export default function Auth() {
             loginTypeEnum.phone
           );
           if (resultConfirm.data.transport?.phone === 'success') {
-            localStorage.setItem('address', data.phone);
-            localStorage.setItem('password', data.password);
-            localStorage.setItem('name', data.name);
-            localStorage.setItem('type', loginTypeEnum.phone);
-            setShowConfirm('block');
+            setAddress(data.phone);
+            setType(loginTypeEnum.phone);
+            setShowConfirm(true);
           } else {
             toast.error(
               'Не удалось отправить подтверждение на телефон ' + data.phone,
@@ -193,7 +150,7 @@ export default function Auth() {
         ? event.currentTarget.name_register.value
         : undefined,
     });
-    console.log(data);
+    //console.log(data);
 
     if (!data.email && !data.phone) {
       toast.error(
@@ -211,10 +168,8 @@ export default function Auth() {
     }
     if (mode === 'login') {
       await loginHandler(data);
-      ///
     }
     if (mode === 'register') {
-      //
       await registerHandler(data);
     }
   }
@@ -243,30 +198,16 @@ export default function Auth() {
             <button className="button" type="submit">
               register
             </button>
-            <div className="confirm_container" style={{ display: showConfirm }}>
-              На ваш адрес {localStorage.getItem('address')} был отправлен код
-              подтверждения. Введите его в поле ниже:
-              <br />
-              <input
-                className="confirm_input"
-                type="text"
-                onChange={(event) => confirmAndRegisterContinue(event)}
-                placeholder='введите код'
-                maxLength={5}
-                size={5}
-              />
-              <br />
-              {isDisableReply && `Если к вам не пришел код, то повторите отправку кода через ${count} секунд`}
-
-              <button
-                className="button"
-                disabled={isDisableReply}
-                type="submit"
-              >
-                Отправить повторно
-              </button>
-            </div>
           </form>
+          {showConfirm && type ? (
+            <ConfirmForm
+              changeConfirm={changeConfirm}
+              address={address}
+              type={type}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
       {/* <div className='confirm_container' ></div> */}

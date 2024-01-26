@@ -13,6 +13,8 @@ export async function authorizeJWT(req: Request, res: Response, next: NextFuncti
     }
     if (!user) {
       return res.status(401).json({ error: 'unauthorized' });
+    } else {
+      req.user = { id: user.id, name: user.name, email: user.email, phone: user.phone };
     }
     return next();
   })(req, res, next);

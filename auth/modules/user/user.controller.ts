@@ -9,6 +9,11 @@ export function UserController() {
   const router = Router();
   const userService = new UserService();
   //router.use(startTiming);
+
+  router.get('/me', authorizeJWT, (req: Request, res: Response, next: NextFunction) => {
+    userService.getMe(req, res).catch(next);
+  });
+
   router.get(
     '/',
     (req: Request, res: Response, next: NextFunction) => {
@@ -18,6 +23,7 @@ export function UserController() {
       userService.find(req, res).catch(next);
     },
   );
+
   router.get(
     '/:id',
     (req: Request, res: Response, next: NextFunction) => {
@@ -28,6 +34,7 @@ export function UserController() {
       userService.get(req, res).catch(next);
     },
   );
+
 
   return router;
 }
