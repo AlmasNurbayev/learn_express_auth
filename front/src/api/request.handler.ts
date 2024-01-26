@@ -1,4 +1,5 @@
-import axios, { AxiosHeaders } from 'axios';
+import axios, { AxiosHeaders,  InternalAxiosRequestConfig } from 'axios';
+import { useAuth } from '../store/useAuth';
 
 export async function requestHandler(options: {
   method: string;
@@ -9,8 +10,20 @@ export async function requestHandler(options: {
   headers?: AxiosHeaders,
 }) {
   const { method, data, url, params, withCredentials, headers } = options;
+  const axiosInstance = axios.create(); 
+  const accessToken = useAuth.getState().accessToken;
+
+  axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    if (config.headers) {
+      config.headers.Authorization = `Bearer ${accessToken}`
+    }
+    return config;
+    //config.headers?.setAuthorization(`Bearer ${accessToken}`);
+  })
+
   try {
-    const result = await axios({
+    
+    const result = await axiosInstance({
       method: method,
       url: url,
       data: data,

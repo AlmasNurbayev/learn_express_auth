@@ -16,7 +16,6 @@ import {
 } from '../interfaces/login.';
 import { toastDefaultConfig } from '../config/config';
 import { useState } from 'react';
-import { login } from '../common/AuthProvider';
 import ConfirmForm from '../components/Auth/ConfirmForm';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/useAuth';

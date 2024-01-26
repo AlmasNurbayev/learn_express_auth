@@ -4,18 +4,17 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import Header from './components/Header';
 import { Iuser } from './interfaces/user';
-import { apiUserGetMany } from './api/api.user';
+import { apiUserFindMany } from './api/api.user';
 import { useAuth } from './store/useAuth';
 
 function App() {
   const [count, setCount] = useState(0);
   const [users, setUsers] = useState([]);
   const [errors, setErrors] = useState('');
-  const { accessToken } = useAuth();
-
+  
   useEffect(() => {
     async function load() {
-      const result = await apiUserGetMany(undefined, accessToken);
+      const result = await apiUserFindMany();
       if (result?.status === 200) {
         setUsers(result.data.data);
       } else if (result?.status === 401) {
@@ -35,7 +34,7 @@ function App() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {errors && <p>{errors}</p>}
             {users.map((item: Iuser) => (
-              <ul >
+              <ul key={item.id}>
                 <li>{item.id}</li>
                 <li>{item.name}</li>
                 <li>{item.email}</li>
