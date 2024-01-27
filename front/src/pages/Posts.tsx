@@ -1,6 +1,5 @@
 import { useDeferredValue, useEffect, useState } from 'react';
 import { apiDummyGet } from '../api/dummyjson';
-import Header from '../components/Header';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../components/Pagination';
 import Loader from '../components/Loader/Loader';

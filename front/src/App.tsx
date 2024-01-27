@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
-import Header from './components/Header';
 import { Iuser } from './interfaces/user';
 import { apiUserFindMany } from './api/api.user';
-import { useAuth } from './store/useAuth';
 import Loader from './components/Loader/Loader';
 
 function App() {

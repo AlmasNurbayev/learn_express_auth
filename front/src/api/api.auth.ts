@@ -12,7 +12,6 @@ import {
   sendConfirmUrl,
 } from '../config/config';
 import { requestHandler } from './request.handler';
-import { AxiosHeaders } from 'axios';
 
 export async function apiAuthLogin(data: loginRequest) {
   return await requestHandler({

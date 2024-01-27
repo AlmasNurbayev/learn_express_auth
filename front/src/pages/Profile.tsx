@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { apiAuthMe } from '../api/api.auth';
-import { Iuser } from '../interfaces/user';
 import { ToastContainer, toast } from 'react-toastify';
 import { toastDefaultConfig } from '../config/config';
-import Header from '../components/Header';
 import { useAuth } from '../store/useAuth';
 
 export default function ProfilePage() {

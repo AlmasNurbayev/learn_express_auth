@@ -1,4 +1,4 @@
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Pagination({
   limit = 10,
@@ -13,7 +13,7 @@ export default function Pagination({
   
   const current: number = Number(params.get('page')) || 1;
   const pagesCount = Math.ceil(count / limit);
-  const pagesNumbers = Array.from({ length: pagesCount }, (v, i) => i + 1);
+  const pagesNumbers = Array.from({ length: pagesCount }, (_, i) => i + 1);
 
   const linkToPageProps = (pageNumber: number) => {
     params.set("page", String(pageNumber))

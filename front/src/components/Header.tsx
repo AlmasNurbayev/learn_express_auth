@@ -6,7 +6,7 @@ export default function Header() {
   const { user, clearUser } = useAuth();
 
   return (
-    <div className="header_wrapper">
+    <header className="header_wrapper">
       <Link to="/">
         <img src="./logo.png" alt="Logo" width={400} />
       </Link>
@@ -43,6 +43,6 @@ export default function Header() {
       ) : (
         ''
       )}
-    </div>
+    </header>
   );
 }

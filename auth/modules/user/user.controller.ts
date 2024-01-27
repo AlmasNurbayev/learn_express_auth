@@ -36,6 +36,5 @@ export function UserController() {
     },
   );
 
-
   return router;
 }

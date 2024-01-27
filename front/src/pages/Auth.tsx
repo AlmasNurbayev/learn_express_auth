@@ -1,5 +1,3 @@
-import Header from '../components/Header';
-
 import './auth.css';
 import {
   apiAuthLogin,
