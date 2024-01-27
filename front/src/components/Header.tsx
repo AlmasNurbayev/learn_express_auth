@@ -3,7 +3,6 @@ import './header.css';
 import { useAuth } from '../store/useAuth';
 
 export default function Header() {
-  const auth = localStorage.getItem('isAuth');
   const { user, clearUser } = useAuth();
 
   return (
@@ -12,9 +11,27 @@ export default function Header() {
         <img src="./logo.png" alt="Logo" width={400} />
       </Link>
       <ul>
+        {/* всегда */}
+        <li>
+          <Link to="/">Главная</Link>
+        </li>
+        <li>
+          <Link to="/posts">Посты</Link>
+        </li>
+        {/* если нет регистрации */}
         <li>{!user ? <Link to="/auth">Вход</Link> : ''}</li>
+        {/* требует регистрации */}
         <li>{user ? <Link to="/profile">Профиль</Link> : ''}</li>
-        <li>{user ? <button onClick={() => clearUser()}>Выход {user && user.name}</button> : ''}</li>
+        {/* требует регистрации */}
+        <li>
+          {user ? (
+            <button onClick={() => clearUser()}>
+              Выход {user && user.name}
+            </button>
+          ) : (
+            ''
+          )}
+        </li>
       </ul>
     </div>
   );

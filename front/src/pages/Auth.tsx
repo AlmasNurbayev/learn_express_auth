@@ -20,7 +20,7 @@ import ConfirmForm from '../components/Auth/ConfirmForm';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/useAuth';
 
-export default function Auth() {
+export default function AuthPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [address, setAddress] = useState<string>('');
   const [type, setType] = useState<loginTypeEnum>();
@@ -187,17 +187,17 @@ export default function Auth() {
             Login
             <input type="text" placeholder="email" name="email" />
             <input type="text" placeholder="phone" name="phone" />
-            <input type="text" placeholder="password" name="password" />
+            <input type="password" placeholder="password" name="password" required />
             <button className="button" type="submit">login</button>
           </form>
         </div>
         <div>
           <form onSubmit={(e) => loginRegisterHandler(e, 'register')}>
             Register
-            <input type="text" placeholder="name" name="name_register" />
+            <input type="text" placeholder="name" name="name_register" required/>
             <input type="text" placeholder="email" name="email" />
             <input type="text" placeholder="phone" name="phone" />
-            <input type="text" placeholder="password" name="password" />
+            <input type="password" placeholder="password" name="password" required />
             <button className="button" type="submit">
               register
             </button>

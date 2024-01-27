@@ -4,6 +4,7 @@ import {
   loginTypeEnum,
 } from '../interfaces/login.';
 import {
+  backUrl,
   getMeUrl,
   loginUrl,
   registerUrl,
@@ -57,5 +58,13 @@ export async function apiAuthMe() {
   return await requestHandler({
     method: 'get',
     url: getMeUrl,
+  });
+}
+
+export async function apiAuthRefresh() {
+  return await requestHandler({
+    method: 'get',
+    url: backUrl + '/auth/refresh',
+    withCredentials: true,
   });
 }

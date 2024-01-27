@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useCountdown } from 'usehooks-ts';
 import { toastDefaultConfig } from '../../config/config';
@@ -26,28 +26,27 @@ export default function ConfirmForm({
     setisDisableReply(false);
   }
 
-  async function confirmAndRegisterContinue(
-    event: any
-  ) {
+  type TFormFields = {
+    code: HTMLInputElement;
+  };
+
+  const confirmAndRegisterContinue: FormEventHandler<
+    HTMLFormElement & TFormFields
+  > = async (event) => {
     event.preventDefault();
-     const code = event.target.code.value;
+    const form = event.currentTarget;
+    const code = form.code.value;
 
     if (isDisableReply) {
       return;
     }
-    const resultConfirm = await apiAuthSendConfirm(
-      address,
-      type,
-      code
-    );
-    console.log(code);
-    console.log(event);
-    
-    event.target.code.value = '';
+    const resultConfirm = await apiAuthSendConfirm(address, type, code);
+
+    form.code.value = '';
     if (resultConfirm?.status !== 200) {
       setisDisableReply(true);
       startCountdown();
-  
+
       if (resultConfirm?.data.error === 'not correct data') {
         toast.error(
           'Неправильный код или адрес, повторите отправку кода через минуту',
@@ -78,11 +77,11 @@ export default function ConfirmForm({
       //registerHandler(data);
     }
     console.log('resultConfirm', resultConfirm);
-  }
+  };
 
   return (
     <>
-      <form onSubmit={(event) => confirmAndRegisterContinue(event)}>
+      <form onSubmit={confirmAndRegisterContinue}>
         <div className="confirm_container">
           На ваш адрес {localStorage.getItem('address')} был отправлен код
           подтверждения. Введите его в поле ниже:
@@ -98,7 +97,7 @@ export default function ConfirmForm({
           <br />
           {isDisableReply &&
             `Если вам не пришел код, то повторите отправку кода через ${count} секунд`}
-            <br/>
+          <br />
           <button type="submit" className="button" disabled={isDisableReply}>
             Отправить код
           </button>
