@@ -25,6 +25,7 @@ export const useAuth = create<IuseAuth>()(
         },
         clearUser: () => {
           set({ user: null }, false, 'clearUser');
+          set({ accessToken: '' }, false, 'clearUser');
         },
         setAccessToken: (token: string) => {
           set({ accessToken: token }, false, 'setAccessToken');

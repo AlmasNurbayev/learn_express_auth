@@ -87,7 +87,7 @@ export default function PostsPage() {
               id="item_container"
               key={item.id}
               style={{
-                border: '1px solid black',
+                // border: '1px solid black',
                 display: 'flex',
                 flexDirection: 'column',
                 padding: '10px',
