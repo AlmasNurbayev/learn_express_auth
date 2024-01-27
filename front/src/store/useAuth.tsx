@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Iuser } from '../interfaces/user';
-import { devtools, persist } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 export interface IuseAuth {
   user: Iuser | null;
@@ -30,7 +30,7 @@ export const useAuth = create<IuseAuth>()(
           set({ accessToken: token }, false, 'setAccessToken');
         },
       }),
-      { name: 'useAuth', getStorage: () => sessionStorage }
+      { name: 'useAuth', storage: createJSONStorage(() => sessionStorage), }
     )
   )
 );

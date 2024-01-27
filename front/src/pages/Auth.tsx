@@ -179,7 +179,6 @@ export default function AuthPage() {
 
   return (
     <>
-      <Header />
       <ToastContainer />
       <div className="login_container">
         <div>

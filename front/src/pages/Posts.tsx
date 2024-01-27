@@ -53,7 +53,6 @@ export default function PostsPage() {
 
   return (
     <>
-      <Header />
       <div style={{ margin: '0 auto', maxWidth: '800px' }}>
         <div id="title" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
           <h1>Posts</h1>

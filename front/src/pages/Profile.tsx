@@ -6,7 +6,7 @@ import { toastDefaultConfig } from '../config/config';
 import Header from '../components/Header';
 import { useAuth } from '../store/useAuth';
 
-export default function Profile() {
+export default function ProfilePage() {
   const {user, setUser, clearUser} = useAuth();
 
   useEffect(() => {
@@ -28,7 +28,6 @@ export default function Profile() {
 
   return (
     <>
-      <Header/>
       <ToastContainer />
       Profile
       {user && (
