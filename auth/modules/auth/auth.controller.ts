@@ -52,7 +52,7 @@ export function AuthController() {
   );
 
   router.get('/refresh', (req: Request, res: Response, next: NextFunction) => {
-    authService.refresh(req, res, next).catch(next);
+    authService.refresh(req, res).catch(next);
   });
 
   return router;

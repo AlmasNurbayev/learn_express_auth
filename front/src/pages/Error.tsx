@@ -1,8 +1,20 @@
 import Header from '../components/Header';
-import { useRouteError } from 'react-router-dom';
+import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 
 export default function ErrorPage() {
-  const error: any = useRouteError();
+  const error: unknown = useRouteError();
+  let errorMessage;
+
+  if (isRouteErrorResponse(error)) {
+    errorMessage = `status: ${error.status} data: ${error.data} statusText: ${error.statusText}`;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+  } else if (typeof error === 'string') {
+    errorMessage = error;
+  } else {
+    console.error(error);
+    errorMessage = 'Unknown error';
+  }
 
   return (
     <>
@@ -16,15 +28,7 @@ export default function ErrorPage() {
         }}
       >
         <h1>Что-то пошло не так....</h1>
-        {error.status?.toString() === '404' ? (
-          <div>Не найден запрашиваемый ресурс</div>
-        ) : (
-          <>
-            <div>status: {error.status?.toString()}</div>
-            <div>statusText: {error.statusText?.toString()}</div>
-            <div>data: {error.data?.toString()}</div>
-          </>
-        )}
+        {errorMessage}
       </div>
     </>
   );
