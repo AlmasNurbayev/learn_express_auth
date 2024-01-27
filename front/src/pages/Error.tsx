@@ -17,7 +17,7 @@ export default function ErrorPage() {
         }}
       >
         <h1>Что-то пошло не так....</h1>
-        {error.status === 404 ? (
+        {error.status?.toString() === '404' ? (
           <div>Не найден запрашиваемый ресурс</div>
         ) : (
           <>
