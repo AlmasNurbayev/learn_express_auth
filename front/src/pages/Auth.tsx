@@ -4,7 +4,7 @@ import {
   apiAuthRegister,
   apiAuthRequestConfirm,
 } from '../api/api.auth';
-import { deleteUndefinedEmptyKeys } from '../common/utils';
+import { deleteUndefinedEmptyKeys, parseZodErrors } from '../common/utils';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -17,20 +17,24 @@ import { useState } from 'react';
 import ConfirmForm from '../components/Auth/ConfirmForm';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/useAuth';
+import Input from '../components/Input/Input';
+import { FormError } from '../common/interfaces';
 
 export default function AuthPage() {
+  const [errors, setErrors] = useState<FormError[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [address, setAddress] = useState<string>('');
   const [type, setType] = useState<loginTypeEnum>();
-  const [sharedDataRegister, setSharedDataRegister ] = useState<RegisterRequest>();
-  const {setUser, setAccessToken}  = useAuth();
+  const [sharedDataRegister, setSharedDataRegister] =
+    useState<RegisterRequest>();
+  const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
 
   // для передачи значения сюда из ConfirmForm
   const changeConfirm = async (value: boolean) => {
     setShowConfirm(value);
     if (!value) {
-        console.log('changeConfirm 1');
+      console.log('changeConfirm 1');
       // если из формы конфирма вернулось ее скрытие, то пробуем заново зарегистрироваться
       if (sharedDataRegister) {
         await registerHandler(sharedDataRegister);
@@ -45,28 +49,32 @@ export default function AuthPage() {
   }
 
   async function loginHandler(data: loginRequest) {
+    setErrors([]);
     const resultLogin = await apiAuthLogin(data);
     if (resultLogin?.status === 200) {
       //await login(resultLogin.data.data, resultLogin.data.accessToken);
       setUser(resultLogin.data.data);
       setAccessToken(resultLogin.data.accessToken);
-      toast.success(`Добро пожаловать ${resultLogin.data.data.name}`, toastDefaultConfig);
+      toast.success(
+        `Добро пожаловать ${resultLogin.data.data.name}`,
+        toastDefaultConfig
+      );
       navigate('/');
     }
     if (resultLogin?.status !== 200) {
-      if (resultLogin?.data.error === 'not correct login data') {
-        toast.error('Неправильные учетные данные', toastDefaultConfig);
+      if (resultLogin?.data.error) {
+        toast.error(resultLogin?.data.error, toastDefaultConfig);
         return;
       }
-      if (resultLogin?.data?.issues[0]?.path[1] === 'email') {
-        toast.error('Некорректный email', toastDefaultConfig);
-        return;
+      if (resultLogin?.data?.issues) {
+        setErrors((prev) => [...prev, ...parseZodErrors(resultLogin)]);
       }
     }
   }
 
   async function registerHandler(data: RegisterRequest) {
     const result = await apiAuthRegister(data);
+    setErrors([]);
     if (result?.status === 200) {
       toast.success(
         'Регистрация прошла успешно, производится вход',
@@ -77,10 +85,6 @@ export default function AuthPage() {
       return;
     }
     if (result?.status !== 200) {
-      if (result?.data?.error?.includes('duplicate')) {
-        toast.error('Email или телефон уже существуют', toastDefaultConfig);
-        return;
-      }
       if (result?.data?.error?.includes('not confirmed')) {
         toast.warning(
           'На указанный email или телефон отправляется код подтверждения',
@@ -122,17 +126,7 @@ export default function AuthPage() {
         }
       }
       if (result?.data?.issues) {
-        result?.data?.issues.map((item: { path: string[] }) => {
-          if (item.path[1] === 'password') {
-            toast.error(
-              'Пароль должен быть заполнен и не менее 8 символов',
-              toastDefaultConfig
-            );
-          }
-          if (item.path[1] === 'name') {
-            toast.error('Имя должно быть заполнено', toastDefaultConfig);
-          }
-        });
+        setErrors((prev) => [...prev, ...parseZodErrors(result)]);
       }
       console.log('resultRegister', result);
     }
@@ -147,58 +141,122 @@ export default function AuthPage() {
       email: event.currentTarget.email.value,
       phone: event.currentTarget.phone.value,
       password: event.currentTarget.password.value,
-      name: event.currentTarget.name_register?.value
-        ? event.currentTarget.name_register.value
+      name: event.currentTarget.name?.value
+        ? event.currentTarget.name.value
         : undefined,
     });
-    //console.log(data);
+    if (data.phone) {
+      // оставляем только цифры
+      data.phone = data.phone.replaceAll(/[\D]/g, '');
+    }
 
-    if (!data.email && !data.phone) {
-      toast.error(
-        'Введите либо почтовый адрес либо номер телефона',
-        toastDefaultConfig
-      );
-      return;
-    }
-    if (data.email && data.phone) {
-      toast.error(
-        'Введите что-то одно: либо почтовый адрес либо номер телефона',
-        toastDefaultConfig
-      );
-      return;
-    }
     if (mode === 'login') {
       await loginHandler(data);
     }
     if (mode === 'register') {
       await registerHandler(data);
+      event.currentTarget.reset();
     }
   }
 
   return (
     <>
       <ToastContainer />
-      <div className="login_container">
-        <div>
-          <form onSubmit={(e) => loginRegisterHandler(e, 'login')}>
-            Login
-            <input type="text" placeholder="email" name="email" />
-            <input type="text" placeholder="phone" name="phone" />
-            <input type="password" placeholder="password" name="password" required />
-            <button className="button" type="submit">login</button>
-          </form>
+      <div className="main_container">
+        <div className="tab-nav">
+          <a className="tab-link" href="#login">
+            Вход
+          </a>
+          <a className="tab-link" href="#register">
+            Регистрация
+          </a>
         </div>
-        <div>
-          <form onSubmit={(e) => loginRegisterHandler(e, 'register')}>
-            Register
-            <input type="text" placeholder="name" name="name_register" required/>
-            <input type="text" placeholder="email" name="email" />
-            <input type="text" placeholder="phone" name="phone" />
-            <input type="password" placeholder="password" name="password" required />
+        <div className="auth_container">
+          <form
+            className="form_container tab-none"
+            id="login"
+            onSubmit={(e) => loginRegisterHandler(e, 'login')}
+          >
+            <span className="form_title">Вход</span>
+            <Input
+              type="email"
+              placeholder="почтовый адрес"
+              name="email"
+              error={errors}
+              mainfontsize={16}
+              secondfontsize={12}
+            />
+            <Input
+              type="tel"
+              placeholder="7 000 0000000"
+              name="phone"
+              label="номер телефона"
+              error={errors}
+              mainfontsize={16}
+              secondfontsize={12}
+            />
+            <Input
+              type="password"
+              placeholder="пароль"
+              name="password"
+              error={errors}
+              mainfontsize={16}
+              secondfontsize={12}
+              required
+            />
             <button className="button" type="submit">
-              register
+              Войти
             </button>
           </form>
+
+          <form
+            className="form_container tab-none"
+            id="register"
+            onSubmit={(e) => loginRegisterHandler(e, 'register')}
+          >
+            <span className="form_title">Регистрация</span>
+            <Input
+              type="text"
+              placeholder="имя"
+              name="name"
+              mainfontsize={16}
+              secondfontsize={12}
+              error={errors}
+              required
+            />
+            <Input
+              type="email"
+              placeholder="почтовый адрес"
+              name="email"
+              mainfontsize={16}
+              secondfontsize={12}
+              error={errors}
+            />
+            или
+            <Input
+              type="text"
+              placeholder="7 000 0000000"
+              label="телефон"
+              name="phone"
+              mainfontsize={16}
+              secondfontsize={12}
+              error={errors}
+            />
+            <Input
+              type="password"
+              placeholder="пароль"
+              name="password"
+              mainfontsize={16}
+              secondfontsize={12}
+              required
+              error={errors}
+            />
+            <button className="button" type="submit">
+              Зарегистрироваться
+            </button>
+          </form>
+        </div>
+        <div className="confirm_container">
           {showConfirm && type ? (
             <ConfirmForm
               changeConfirm={changeConfirm}
@@ -210,6 +268,7 @@ export default function AuthPage() {
           )}
         </div>
       </div>
+
       {/* <div className='confirm_container' ></div> */}
     </>
   );

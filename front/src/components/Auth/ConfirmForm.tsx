@@ -5,6 +5,9 @@ import { toastDefaultConfig } from '../../config/config';
 import { loginTypeEnum } from '../../interfaces/login.';
 import { apiAuthSendConfirm } from '../../api/api.auth';
 import './ConfirmForm.css';
+import { FormError } from '../../common/interfaces';
+import { parseZodErrors } from '../../common/utils';
+import Input from '../Input/Input';
 
 export default function ConfirmForm({
   address,
@@ -20,6 +23,7 @@ export default function ConfirmForm({
     countStart: 60,
     intervalMs: 1000,
   });
+  const [errors, setErrors] = useState<FormError[]>([]);
 
   if (count === 0) {
     resetCountdown();
@@ -40,19 +44,15 @@ export default function ConfirmForm({
     if (isDisableReply) {
       return;
     }
+    setErrors([]);
     const resultConfirm = await apiAuthSendConfirm(address, type, code);
 
     form.code.value = '';
     if (resultConfirm?.status !== 200) {
       setisDisableReply(true);
       startCountdown();
-
-      if (resultConfirm?.data.error === 'not correct data') {
-        toast.error(
-          'Неправильный код или адрес, повторите отправку кода через минуту',
-          toastDefaultConfig
-        );
-        return;
+      if (resultConfirm?.data?.issues) {
+        setErrors((prev) => [...prev, ...parseZodErrors(resultConfirm)]);
       } else {
         toast.error(
           'Ошибка при отправке кода, повторите попытку через минуту',
@@ -85,16 +85,17 @@ export default function ConfirmForm({
         <div className="confirm_container">
           На ваш адрес {localStorage.getItem('address')} был отправлен код
           подтверждения. Введите его в поле ниже:
-          <br />
-          <input
-            className="confirm_input"
+          <Input
             name="code"
             type="text"
             placeholder="введите код"
+            error={errors}
             maxLength={5}
             size={5}
+            mainfontsize={26}
+            secondfontsize={10}
+            style={{border: 'solid 1px black'}}
           />
-          <br />
           {isDisableReply &&
             `Если вам не пришел код, то повторите отправку кода через ${count} секунд`}
           <br />

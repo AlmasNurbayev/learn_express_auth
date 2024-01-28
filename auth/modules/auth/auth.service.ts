@@ -21,16 +21,19 @@ export class AuthService {
 
   public async register(req: Request, res: Response) {
     const { name, email, phone, password } = req.body;
-    if (!phone && !email) {
-      res.status(400).send({ error: 'not found email or phone' });
-    }
+    // if (!phone && !email) {
+    //   res.status(400).send({ error: 'not found email or phone' });
+    // }
 
     if (email) {
       const is_duplicate = await db.query.users.findFirst({
         where: and(eq(users.email, email)),
       });
       if (is_duplicate) {
-        res.status(400).send({ error: `duplicate ${email}` });
+        res
+          .status(400)
+          .send({ issues: [{ message: 'email уже существует', path: ['email'] }] });
+        // отправляем ошибку в формате Zod чтобы обрабатывать одинаково
         return;
       }
       const confirm = await db.query.confirms.findFirst({
@@ -50,7 +53,10 @@ export class AuthService {
         where: and(eq(users.phone, phone)),
       });
       if (is_duplicate) {
-        res.status(400).send({ error: `duplicate ${phone}` });
+        // отправляем ошибку в формате Zod чтобы обрабатывать одинаково
+        res
+          .status(400)
+          .send({ issues: [{ message: 'телефон уже существует', path: ['phone'] }] });
         return;
       }
       const confirm = await db.query.confirms.findFirst({
@@ -177,7 +183,9 @@ export class AuthService {
       )
       .returning();
     if (result.length === 0) {
-      res.status(400).send({ error: 'not correct data' });
+      res.status(400).send({
+        issues: [{ message: 'неверный код', path: ['code'] }],
+      });
     } else {
       res.status(200).send({ message: 'success' });
     }
@@ -196,7 +204,11 @@ export class AuthService {
       user = await db.query.users.findFirst({ where: eq(users.phone, phone) });
     }
     if (!user) {
-      res.status(400).send({ error: 'not correct login data' });
+      res.status(400).send({
+        issues: [
+          { message: 'неверные учетные данные', path: ['phone', 'email', 'password'] },
+        ],
+      });
     }
     const isValidPassword = await bcrypt.compare(password, String(user?.password));
 
@@ -219,7 +231,11 @@ export class AuthService {
 
       res.status(200).send({ data: userWithoutPassword, accessToken, refreshToken });
     } else {
-      res.status(400).send({ error: 'not correct login data' });
+      res.status(400).send({
+        issues: [
+          { message: 'неверные учетные данные', path: ['phone', 'email', 'password'] },
+        ],
+      });
     }
   }
 

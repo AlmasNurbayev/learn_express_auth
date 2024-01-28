@@ -33,7 +33,7 @@ export default function Pagination({
           page <= 3 ||
           Math.abs(current - page) < 3 ||
           Math.abs(pagesNumbers.length - page) < 3 ? (
-            <button id={page.toString()} onClick={() => handleClick(page)}
+            <button key={page.toString()} onClick={() => handleClick(page)}
             style={current === page ? {borderStyle: 'solid'} : {}}
             >{page}</button>
           ) : Math.abs(current - page) === 3 ? (
