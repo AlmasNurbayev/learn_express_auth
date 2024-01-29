@@ -7,7 +7,7 @@ type propsInput = {
   placeholder?: string;
   name: string;
   label?: string;
-  onChnage?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   type: string;
   error?: FormError[] | undefined;
   mainfontsize?: number;

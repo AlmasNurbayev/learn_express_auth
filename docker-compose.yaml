@@ -39,6 +39,11 @@ services:
       SMSC_USER: ${SMSC_USER}
       SMSC_PASS: ${SMSC_PASS}
 
+      GOOGLE_AUTH_CLIENT_ID: ${GOOGLE_AUTH_CLIENT_ID}
+      GOOGLE_AUTH_CLIENT_SECRET: ${GOOGLE_AUTH_CLIENT_SECRET}
+      GOOGLE_AUTH_URI: ${GOOGLE_AUTH_URI}
+      GOOGLE_AUTH_TOKEN: ${GOOGLE_AUTH_TOKEN}
+
   front:
     image: node:20
     command: bash -c "npm install && npm run dev"
