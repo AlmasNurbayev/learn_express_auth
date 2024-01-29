@@ -10,39 +10,41 @@ export default function Header() {
       <Link to="/">
         <img src="./logo.png" alt="Logo" width={400} />
       </Link>
+      <nav>
+        <div className="link">
+          <Link to="/">Главная</Link>
+        </div>
+
+        <div className="link">
+          <Link to="/posts">Посты</Link>
+        </div>
+
+        {/* если нет регистрации */}
+        {!user ? (
+          <div className="link">
+            <Link to="/auth">Вход</Link>
+          </div>
+        ) : (
+          ''
+        )}
+        {/* требует регистрации */}
+        {user ? (
+          <div className="link">
+            <Link to="/profile">Профиль</Link>
+          </div>
+        ) : (
+          ''
+        )}
+        {/* требует регистрации */}
+        {user ? (
+          <div className="link" onClick={() => clearUser()}>
+            Выход {user && user.name}
+          </div>
+        ) : (
+          ''
+        )}
+      </nav>
       {/* всегда */}
-      <div className="link">
-        <Link to="/">Главная</Link>
-      </div>
-
-      <div className="link">
-        <Link to="/posts">Посты</Link>
-      </div>
-
-      {/* если нет регистрации */}
-      {!user ? (
-        <div className="link">
-          <Link to="/auth">Вход</Link>
-        </div>
-      ) : (
-        ''
-      )}
-      {/* требует регистрации */}
-      {user ? (
-        <div className="link">
-          <Link to="/profile">Профиль</Link>
-        </div>
-      ) : (
-        ''
-      )}
-      {/* требует регистрации */}
-      {user ? (
-        <div className="link" onClick={() => clearUser()}>
-          Выход {user && user.name}
-        </div>
-      ) : (
-        ''
-      )}
     </header>
   );
 }

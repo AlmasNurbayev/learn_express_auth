@@ -29,7 +29,7 @@ function App() {
   }, []);
 
   return (
-    <>
+    <main>
       <div className="app">
         <div>
           <div
@@ -85,7 +85,7 @@ function App() {
           Click on the Vite and React logos to learn more
         </p>
       </div>
-    </>
+    <main/>
   );
 }
 
