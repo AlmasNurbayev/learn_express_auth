@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 import passport from 'passport';
-import '../modules/auth/jwt/jwt.strategy';
+import '../modules/auth/strategies/jwt.strategy';
 import { users } from '../db/schema';
 import { Logger } from '../shared/logger';
 

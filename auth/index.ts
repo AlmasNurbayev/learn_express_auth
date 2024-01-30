@@ -8,25 +8,25 @@ import cookieParser from 'cookie-parser';
 import { Logger } from './shared/logger';
 import { constants } from './constants';
 import { handler404 } from './middlewares/404';
+import './modules/oauth/strategies/google.strategy';
+import { OauthController } from './modules/oauth/oauth.controller';
 
 function bootstrap() {
   const app = express();
   app.use(express.json());
   app.use(cookieParser());
   app.use(cors({ origin: constants.front_url, credentials: true }));
-
   app.get('/', (req, res) => {
     res.send('Hello world');
   });
   app.use('/auth', AuthController());
+  app.use('/oauth', OauthController());
   app.use('/user', UserController());
   app.use(errorHandler);
   app.use(handler404);
   app.listen(8010, () => {
-    Logger.info(
-      'Serve is up and running at the port 8010 >>> ' + process.env.PORT_AUTH_SERVICE,
-    );
     Logger.info('Open cors for >>> ' + constants.front_url);
+    Logger.warn('start at the port 8010 >>> ' + process.env.PORT_AUTH_SERVICE);
   });
 }
 

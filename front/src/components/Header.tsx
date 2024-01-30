@@ -10,7 +10,7 @@ export default function Header() {
       <Link to="/">
         <img src="./logo.png" alt="Logo" width={400} />
       </Link>
-      <nav>
+      <nav className="menu_wrapper">
         <div className="link">
           <Link to="/">Главная</Link>
         </div>

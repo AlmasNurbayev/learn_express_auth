@@ -5,6 +5,12 @@
   justify-items: start;
 }
 
+.menu_wrapper {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: row;
+}
+
 .link {
   padding: 10px;
   font-size: larger;

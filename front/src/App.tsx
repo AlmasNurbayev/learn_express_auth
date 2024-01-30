@@ -5,12 +5,17 @@ import './App.css';
 import { Iuser } from './interfaces/user';
 import { apiUserFindMany } from './api/api.user';
 import Loader from './components/Loader/Loader';
+import { apiAuthMe } from './api/api.auth';
+import { toast } from 'react-toastify';
+import { toastDefaultConfig } from './config/config';
+import { useAuth } from './store/useAuth';
 
 function App() {
   const [count, setCount] = useState(0);
   const [users, setUsers] = useState([]);
   const [errors, setErrors] = useState('');
   const [loading, setLoading] = useState(false);
+  const {user, setUser, clearUser} = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -25,7 +30,29 @@ function App() {
       }
       setLoading(false);
     }
+
+    async function authMe() {
+      if (user) {
+        return;
+      }
+      // аутентифицируемся если есть access токен или кука с refresh токеном
+      // если есть только кука (как в случае входе через Oauth) - то должен
+      // быть interceptor для получения access-токена
+      const res = await apiAuthMe();
+      if (res?.status !== 200) {
+        toast.error(
+          'Не удалось загрузить профиль ' + res.data.error,
+          toastDefaultConfig
+        );
+        clearUser();
+      } else {
+        setUser(res.data.user);
+      }
+    }
+
+    authMe();
     load();
+
   }, []);
 
   return (
@@ -85,7 +112,7 @@ function App() {
           Click on the Vite and React logos to learn more
         </p>
       </div>
-    <main/>
+    </main>
   );
 }
 

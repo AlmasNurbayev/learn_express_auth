@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/useAuth';
 import Input from '../components/Input/Input';
 import { FormError } from '../common/interfaces';
+import Oauth from '../components/Auth/Oauth';
 
 export default function AuthPage() {
   const [errors, setErrors] = useState<FormError[]>([]);
@@ -207,6 +208,8 @@ export default function AuthPage() {
             <button className="button" type="submit">
               Войти
             </button>
+            <span>или</span>
+            <Oauth />
           </form>
 
           <form

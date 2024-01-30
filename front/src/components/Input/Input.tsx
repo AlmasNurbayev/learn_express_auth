@@ -1,5 +1,5 @@
 import React from 'react';
-import './input.css';
+import './Input.css';
 import { FormError } from '../../common/interfaces';
 
 type propsInput = {

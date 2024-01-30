@@ -5,11 +5,12 @@ import { AuthService } from './auth.service';
 import { AuthConfirmSchema } from './schemas/auth.confirm.schema';
 import { AuthSendConfirmSchema } from './schemas/auth.sendConfirm.schema';
 import { AuthLoginSchema } from './schemas/auth.login.schema';
+import { OauthService } from '../oauth/oauth.service';
 
 export function AuthController() {
   const router = Router();
   const authService = new AuthService();
-  //router.use(startTiming);
+
   router.post(
     '/register',
     (req: Request, res: Response, next: NextFunction) => {

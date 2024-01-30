@@ -1,4 +1,5 @@
 import {
+  bigint,
   index,
   integer,
   pgTable,
@@ -16,7 +17,7 @@ export const users = pgTable(
     name: text('name').notNull(),
     email: varchar('email'),
     phone: varchar('phone'),
-    password: varchar('password').notNull(),
+    password: varchar('password'),
   },
   (users) => ({
     emailIndex: uniqueIndex('email_idx').on(users.email),
@@ -33,7 +34,7 @@ export const oauth_users = pgTable('oauth_users', {
     .references(() => users.id)
     .notNull(),
   provider: varchar('provider').notNull(),
-  external_id: integer('external_id'),
+  external_id: varchar('external_id'),
 });
 
 export const confirms = pgTable(

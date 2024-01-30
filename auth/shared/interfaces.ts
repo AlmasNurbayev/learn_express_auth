@@ -8,3 +8,12 @@ export interface IJwtPayload {
   email?: string;
   phone?: string;
 }
+
+export interface IUser {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  external_id?: number;
+}
