@@ -11,4 +11,9 @@ export const constants = {
   GOOGLE_AUTH_TOKEN: process.env.GOOGLE_AUTH_TOKEN,
   GOOGLE_AUTH_PROFILE_URI: process.env.GOOGLE_AUTH_PROFILE_URI,
   GOOGLE_AUTH_CALLBACK_URI: process.env.APP_URL + '/oauth/google/callback',
+
+  YANDEX_AUTH_CLIENT_ID: process.env.YANDEX_AUTH_CLIENT_ID,
+  YANDEX_AUTH_CLIENT_SECRET: process.env.YANDEX_AUTH_CLIENT_SECRET,
+  YANDEX_AUTH_CALLBACK_URI: process.env.APP_URL + '/oauth/yandex/callback',
+  YANDEX_AUTH_PROFILE_URI: process.env.YANDEX_AUTH_PROFILE_URI,
 };

@@ -6,8 +6,6 @@ import { MailerService } from '../notification/mailer.service';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { LoginTypeEnum } from '../../shared/interfaces';
 import { SmscService } from '../notification/smsc.service';
-import jwt from 'jsonwebtoken';
-import { constants } from '../../constants';
 import { Logger } from '../../shared/logger';
 import {
   generateAccessToken,
@@ -16,8 +14,10 @@ import {
 } from '../../shared/jwt_helpers';
 
 export class AuthService {
-  private mailerService = new MailerService();
-  private smscService = new SmscService();
+  constructor(
+    private mailerService = new MailerService(),
+    private smscService = new SmscService(),
+  ) {}
 
   public async register(req: Request, res: Response) {
     const { name, email, phone, password } = req.body;

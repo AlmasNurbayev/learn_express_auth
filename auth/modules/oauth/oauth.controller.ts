@@ -13,5 +13,13 @@ export function OauthController() {
     oauthService.googleCallback(req, res, next).catch(next);
   });
 
+  router.get('/yandex', (req: Request, res: Response, next: NextFunction) => {
+    oauthService.yandexAuthenticate(req, res, next).catch(next);
+  });
+
+  router.get('/yandex/callback', (req: Request, res: Response, next: NextFunction) => {
+    oauthService.yandexCallback(req, res, next).catch(next);
+  });
+
   return router;
 }

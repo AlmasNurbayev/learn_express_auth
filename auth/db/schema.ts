@@ -1,5 +1,4 @@
 import {
-  bigint,
   index,
   integer,
   pgTable,

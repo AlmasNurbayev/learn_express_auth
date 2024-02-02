@@ -9,6 +9,7 @@ import { Logger } from './shared/logger';
 import { constants } from './constants';
 import { handler404 } from './middlewares/404';
 import './modules/oauth/strategies/google.strategy';
+import './modules/oauth/strategies/yandex.strategy';
 import { OauthController } from './modules/oauth/oauth.controller';
 
 function bootstrap() {
